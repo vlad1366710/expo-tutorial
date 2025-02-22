@@ -1,5 +1,7 @@
 // Импортируем необходимые компоненты из библиотеки 'react-native'
 import { Text, View,  StyleSheet } from 'react-native';
+import { Link } from 'expo-router';
+
 // export позволяет делиться кодом между модулями.
 // default используется вместе с export, чтобы указать, что данный экспорт является основным (по умолчанию) для модуля
 export default function Index() {
@@ -8,6 +10,9 @@ export default function Index() {
     <View style={styles.container}>
        {/* Компонент Text отображает текст "Home screen" с применением стилей из styles.text */}
       <Text style={styles.text}>Home screen</Text>
+      <Link href="/about" style={styles.button}>
+        Go to About screen
+      </Link>
     </View>
   );
 }
@@ -24,5 +29,10 @@ const styles = StyleSheet.create({
   // Стиль для текста
   text: {
     color: '#fff', // Цвет текста (белый)
+  },
+  button: {
+    fontSize: 20,
+    textDecorationLine: 'underline',
+    color: '#fff',
   },
 });
