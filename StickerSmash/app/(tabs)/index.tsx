@@ -1,38 +1,46 @@
-// Импортируем необходимые компоненты из библиотеки 'react-native'
-import { Text, View,  StyleSheet } from 'react-native';
-import { Link } from 'expo-router';
+import { View, StyleSheet } from 'react-native'; // Импорт компонентов из React Native
+import Button from '@/components/Button'; // Импорт компонента Button
+import ImageViewer from '@/components/ImageViewer'; // Импорт компонента ImageViewer
 
-// export позволяет делиться кодом между модулями.
-// default используется вместе с export, чтобы указать, что данный экспорт является основным (по умолчанию) для модуля
+// Импорт изображения с использованием require
+const PlaceholderImage = require('@/assets/images/background-image.png');
+
+// Основной компонент Index
 export default function Index() {
   return (
-    // Используем компонент View как контейнер, который применяет стили из styles.container
+    // Основной контейнер, который занимает весь экран
     <View style={styles.container}>
-       {/* Компонент Text отображает текст "Home screen" с применением стилей из styles.text */}
-      <Text style={styles.text}>Home screen</Text>
-      <Link href="/about" style={styles.button}>
-        Go to About screen
-      </Link>
+      {/* Контейнер для изображения */}
+      <View style={styles.imageContainer}>
+        {/* Компонент ImageViewer, который отображает изображение */}
+        <ImageViewer imgSource={PlaceholderImage} />
+      </View>
+      {/* Контейнер для кнопок */}
+      <View style={styles.footerContainer}>
+        {/* Кнопка с темой "primary" */}
+        <Button theme="primary" label="Choose a photo" />
+        {/* Обычная кнопка */}
+        <Button label="Use this photo" />
+      </View>
     </View>
   );
 }
 
-// Создаем объект стилей с помощью StyleSheet.create
+// Стили для компонента Index
 const styles = StyleSheet.create({
-  // Стиль для контейнера
+  // Стиль для основного контейнера
   container: {
-    flex: 1, // Занимает все доступное пространство
+    flex: 1, // Занимает всё доступное пространство
     backgroundColor: '#25292e', // Цвет фона
     alignItems: 'center', // Выравнивание дочерних элементов по центру по горизонтали
-    justifyContent: 'center', // Выравнивание дочерних элементов по центру по вертикали
   },
-  // Стиль для текста
-  text: {
-    color: '#fff', // Цвет текста (белый)
+  // Стиль для контейнера изображения
+  imageContainer: {
+    flex: 1, // Занимает всё доступное пространство внутри контейнера
   },
-  button: {
-    fontSize: 20,
-    textDecorationLine: 'underline',
-    color: '#fff',
+  // Стиль для контейнера кнопок
+  footerContainer: {
+    flex: 1 / 3, // Занимает 1/3 доступного пространства
+    alignItems: 'center', // Выравнивание кнопок по центру
   },
 });
