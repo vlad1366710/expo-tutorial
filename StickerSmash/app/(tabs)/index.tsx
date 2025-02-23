@@ -2,6 +2,7 @@ import { View, StyleSheet } from 'react-native'; // Импорт компоне�
 import * as ImagePicker from 'expo-image-picker'; // Импорт библиотеки для выбора изображений
 import { useState } from 'react'; // Импорт хука useState для управления состоянием
 import { type ImageSource } from 'expo-image'; // Импорт типа ImageSource из библиотеки expo-image
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 // Импорт компонентов
 import Button from '@/components/Button'; // Компонент кнопки
@@ -65,6 +66,7 @@ export default function Index() {
 
   // Возвращаем JSX для рендеринга
   return (
+    <GestureHandlerRootView style={styles.container}>
     <View style={styles.container}>
       {/* Контейнер для изображения */}
       <View style={styles.imageContainer}>
@@ -97,6 +99,7 @@ export default function Index() {
         <EmojiList onSelect={setPickedEmoji} onCloseModal={onModalClose} />
       </EmojiPicker>
     </View>
+    </GestureHandlerRootView>
   );
 }
 
