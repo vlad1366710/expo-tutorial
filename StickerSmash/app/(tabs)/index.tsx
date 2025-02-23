@@ -1,31 +1,40 @@
-import { View, StyleSheet } from 'react-native'; // Импорт компонентов из React Native
-import * as ImagePicker from 'expo-image-picker'; // Импорт библиотеки для выбора изображений
-import { useState } from 'react'; // Импорт хука useState для управления состоянием
-import { type ImageSource } from 'expo-image'; // Импорт типа ImageSource из библиотеки expo-image
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { View, StyleSheet } from 'react-native'; // Основные компоненты React Native
+import * as ImagePicker from 'expo-image-picker'; // Для выбора изображений из галереи
+import { useState, useRef } from 'react'; // Хуки для управления состоянием и ссылками
+import { GestureHandlerRootView } from 'react-native-gesture-handler'; // Для обработки жестов
+import * as MediaLibrary from 'expo-media-library'; // Для сохранения изображений в медиатеку
+import { captureRef } from 'react-native-view-shot'; // Для создания скриншота View
+import { type ImageSource } from 'expo-image'; // Тип для источника изображения
 
-// Импорт компонентов
-import Button from '@/components/Button'; // Компонент кнопки
-import ImageViewer from '@/components/ImageViewer'; // Компонент для отображения изображения
-import IconButton from '@/components/IconButton'; // Компонент кнопки с иконкой
-import CircleButton from '@/components/CircleButton'; // Компонент круглой кнопки
-import EmojiPicker from '@/components/EmojiPicker'; // Компонент модального окна для выбора эмодзи
-import EmojiList from '@/components/EmojiList'; // Компонент списка эмодзи
-import EmojiSticker from '@/components/EmojiSticker'; // Компонент стикера с эмодзи
+// Импорт пользовательских компонентов
+import Button from '@/components/Button'; // Кнопка
+import ImageViewer from '@/components/ImageViewer'; // Просмотр изображения
+import IconButton from '@/components/IconButton'; // Кнопка с иконкой
+import CircleButton from '@/components/CircleButton'; // Круглая кнопка
+import EmojiPicker from '@/components/EmojiPicker'; // Модальное окно для выбора эмодзи
+import EmojiList from '@/components/EmojiList'; // Список эмодзи
+import EmojiSticker from '@/components/EmojiSticker'; // Стикер с эмодзи
 
 // Импорт изображения-заглушки
 const PlaceholderImage = require('@/assets/images/background-image.png');
 
-// Основной компонент Index
 export default function Index() {
-  // Состояние для хранения URI выбранного изображения
-  const [selectedImage, setSelectedImage] = useState<string | undefined>(undefined);
-  // Состояние для отображения дополнительных опций после выбора изображения
-  const [showAppOptions, setShowAppOptions] = useState<boolean>(false);
-  // Состояние для управления видимостью модального окна с эмодзи
-  const [isModalVisible, setIsModalVisible] = useState<boolean>(false);
-  // Состояние для хранения выбранного эмодзи
-  const [pickedEmoji, setPickedEmoji] = useState<ImageSource | undefined>(undefined);
+  // Состояния
+  const [selectedImage, setSelectedImage] = useState<string | undefined>(undefined); // URI выбранного изображения
+  const [showAppOptions, setShowAppOptions] = useState<boolean>(false); // Показывать ли дополнительные опции
+  const [isModalVisible, setIsModalVisible] = useState<boolean>(false); // Видимость модального окна с эмодзи
+  const [pickedEmoji, setPickedEmoji] = useState<ImageSource | undefined>(undefined); // Выбранный эмодзи
+
+  // Запрос разрешения на доступ к медиатеке
+  const [status, requestPermission] = MediaLibrary.usePermissions();
+
+  // Ссылка на View для создания скриншота
+  const imageRef = useRef<View>(null);
+
+  // Если разрешение не запрошено, запрашиваем его
+  if (status === null) {
+    requestPermission();
+  }
 
   // Функция для выбора изображения из галереи
   const pickImageAsync = async () => {
@@ -59,21 +68,39 @@ export default function Index() {
     setIsModalVisible(false); // Скрываем модальное окно
   };
 
-  // Функция для сохранения изображения (пока не реализована)
+  // Функция для сохранения изображения
   const onSaveImageAsync = async () => {
-    // TODO: Реализовать сохранение изображения
+    try {
+      // Создаем скриншот View
+      const localUri = await captureRef(imageRef, {
+        height: 440, // Высота скриншота
+        quality: 1, // Качество скриншота
+      });
+
+      // Сохраняем скриншот в медиатеку
+      await MediaLibrary.saveToLibraryAsync(localUri);
+
+      // Если сохранение прошло успешно, показываем сообщение
+      if (localUri) {
+        alert('Saved!');
+      }
+    } catch (e) {
+      console.log(e); // Логируем ошибку, если что-то пошло не так
+    }
   };
 
-  // Возвращаем JSX для рендеринга
+  // Рендеринг компонента
   return (
     <GestureHandlerRootView style={styles.container}>
-    <View style={styles.container}>
       {/* Контейнер для изображения */}
       <View style={styles.imageContainer}>
-        {/* Компонент ImageViewer, который отображает либо выбранное изображение, либо заглушку */}
-        <ImageViewer imgSource={PlaceholderImage} selectedImage={selectedImage} />
-        {/* Если выбран эмодзи, отображаем его поверх изображения */}
-        {pickedEmoji && <EmojiSticker imageSize={40} stickerSource={pickedEmoji} />}
+        {/* View для создания скриншота */}
+        <View ref={imageRef} collapsable={false}>
+          {/* Компонент для отображения изображения */}
+          <ImageViewer imgSource={PlaceholderImage} selectedImage={selectedImage} />
+          {/* Если выбран эмодзи, отображаем его поверх изображения */}
+          {pickedEmoji && <EmojiSticker imageSize={40} stickerSource={pickedEmoji} />}
+        </View>
       </View>
       {showAppOptions ? (
         <View style={styles.optionsContainer}>
@@ -98,12 +125,10 @@ export default function Index() {
         {/* Список эмодзи */}
         <EmojiList onSelect={setPickedEmoji} onCloseModal={onModalClose} />
       </EmojiPicker>
-    </View>
     </GestureHandlerRootView>
   );
 }
 
-// Стили для компонента Index
 const styles = StyleSheet.create({
   container: {
     flex: 1, // Занимает всё доступное пространство
