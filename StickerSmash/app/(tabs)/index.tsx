@@ -1,24 +1,49 @@
 import { View, StyleSheet } from 'react-native'; // Импорт компонентов из React Native
+import * as ImagePicker from 'expo-image-picker'; // Импорт библиотеки для выбора изображений
+import { useState } from 'react'; // Импорт хука useState для управления состоянием
+
 import Button from '@/components/Button'; // Импорт компонента Button
 import ImageViewer from '@/components/ImageViewer'; // Импорт компонента ImageViewer
 
-// Импорт изображения с использованием require
+// Импорт изображения-заглушки с использованием require
 const PlaceholderImage = require('@/assets/images/background-image.png');
 
 // Основной компонент Index
 export default function Index() {
+  // Состояние для хранения URI выбранного изображения
+  const [selectedImage, setSelectedImage] = useState<string | undefined>(undefined);
+
+  // Функция для выбора изображения из галереи
+  const pickImageAsync = async () => {
+    // Запуск стандартного интерфейса выбора изображения
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'], // Тип медиа (только изображения)
+      allowsEditing: true, // Разрешение редактирования изображения
+      quality: 1, // Качество изображения (от 0 до 1)
+    });
+
+    // Если пользователь выбрал изображение (не нажал "Отмена")
+    if (!result.canceled) {
+      // Устанавливаем URI выбранного изображения в состояние
+      setSelectedImage(result.assets[0].uri);
+    } else {
+      // Если пользователь отменил выбор, показываем сообщение
+      alert('You did not select any image.');
+    }
+  };
+
+  // Возвращаем JSX для рендеринга
   return (
-    // Основной контейнер, который занимает весь экран
     <View style={styles.container}>
       {/* Контейнер для изображения */}
       <View style={styles.imageContainer}>
-        {/* Компонент ImageViewer, который отображает изображение */}
-        <ImageViewer imgSource={PlaceholderImage} />
+        {/* Компонент ImageViewer, который отображает либо выбранное изображение, либо заглушку */}
+        <ImageViewer imgSource={PlaceholderImage} selectedImage={selectedImage} />
       </View>
       {/* Контейнер для кнопок */}
       <View style={styles.footerContainer}>
-        {/* Кнопка с темой "primary" */}
-        <Button theme="primary" label="Choose a photo" />
+        {/* Кнопка с темой "primary" для выбора изображения */}
+        <Button theme="primary" label="Choose a photo" onPress={pickImageAsync} />
         {/* Обычная кнопка */}
         <Button label="Use this photo" />
       </View>
