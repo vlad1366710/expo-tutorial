@@ -1,10 +1,11 @@
-import { View, StyleSheet } from 'react-native'; // Основные компоненты React Native
+import { View, StyleSheet, Platform } from 'react-native'; // Основные компоненты React Native
 import * as ImagePicker from 'expo-image-picker'; // Для выбора изображений из галереи
 import { useState, useRef } from 'react'; // Хуки для управления состоянием и ссылками
 import { GestureHandlerRootView } from 'react-native-gesture-handler'; // Для обработки жестов
 import * as MediaLibrary from 'expo-media-library'; // Для сохранения изображений в медиатеку
-import { captureRef } from 'react-native-view-shot'; // Для создания скриншота View
 import { type ImageSource } from 'expo-image'; // Тип для источника изображения
+import { captureRef } from 'react-native-view-shot'; // Для создания скриншота View
+import domtoimage from 'dom-to-image'; // Для создания изображений из DOM (веб-версия)
 
 // Импорт пользовательских компонентов
 import Button from '@/components/Button'; // Кнопка
@@ -70,22 +71,43 @@ export default function Index() {
 
   // Функция для сохранения изображения
   const onSaveImageAsync = async () => {
-    try {
-      // Создаем скриншот View
-      const localUri = await captureRef(imageRef, {
-        height: 440, // Высота скриншота
-        quality: 1, // Качество скриншота
-      });
+    if (Platform.OS !== 'web') {
+      // Для мобильных платформ
+      try {
+        // Создаем скриншот View
+        const localUri = await captureRef(imageRef, {
+          height: 440, // Высота скриншота
+          quality: 1, // Качество скриншота
+        });
 
-      // Сохраняем скриншот в медиатеку
-      await MediaLibrary.saveToLibraryAsync(localUri);
+        // Сохраняем скриншот в медиатеку
+        await MediaLibrary.saveToLibraryAsync(localUri);
 
-      // Если сохранение прошло успешно, показываем сообщение
-      if (localUri) {
-        alert('Saved!');
+        // Если сохранение прошло успешно, показываем сообщение
+        if (localUri) {
+          alert('Saved!');
+        }
+      } catch (e) {
+        console.log(e); // Логируем ошибку, если что-то пошло не так
       }
-    } catch (e) {
-      console.log(e); // Логируем ошибку, если что-то пошло не так
+    } else {
+      // Для веб-платформы
+      try {
+        // Создаем изображение из DOM
+        const dataUrl = await domtoimage.toJpeg(imageRef.current, {
+          quality: 0.95, // Качество изображения
+          width: 320, // Ширина изображения
+          height: 440, // Высота изображения
+        });
+
+        // Создаем ссылку для скачивания изображения
+        let link = document.createElement('a');
+        link.download = 'sticker-smash.jpeg'; // Имя файла
+        link.href = dataUrl; // URL изображения
+        link.click(); // Имитируем клик для скачивания
+      } catch (e) {
+        console.log(e); // Логируем ошибку, если что-то пошло не так
+      }
     }
   };
 
@@ -102,6 +124,8 @@ export default function Index() {
           {pickedEmoji && <EmojiSticker imageSize={40} stickerSource={pickedEmoji} />}
         </View>
       </View>
+
+      {/* Если дополнительные опции активны, показываем их */}
       {showAppOptions ? (
         <View style={styles.optionsContainer}>
           <View style={styles.optionsRow}>
